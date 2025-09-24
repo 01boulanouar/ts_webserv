@@ -1,18 +1,14 @@
 import express from "express";
-import { Request, Response } from "express";
+import { middlewareLogResponses } from "./middleware.js";
+import { handlerReadiness } from "./handler.js";
 
 const app = express();
 const PORT = 8080;
 
-app.use(express.static("."));
+app.use("/app", express.static("./src/app"));
 
-async function handlerReadiness(req: Request, res: Response): Promise<void> {
-    res.set({
-        "Content-Type": "text/plain",
-    });
-    res.send();
+app.use(middlewareLogResponses);
 
-}
 
 app.get('/healthz', handlerReadiness);
 
