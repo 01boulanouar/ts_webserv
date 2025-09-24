@@ -5,7 +5,7 @@ import { handerValidateChirp, handlerMetrics, handlerReadiness, handlerReset } f
 const app = express();
 const PORT = 8080;
 
-app.use(middlewareLogResponses);
+app.use(express.json(), middlewareLogResponses);
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
 app.get("/admin/metrics", handlerMetrics);

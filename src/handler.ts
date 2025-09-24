@@ -29,39 +29,27 @@ export async function handlerReset(req: Request, res: Response): Promise<void> {
     res.send("Reset the metrics");
 }
 
+
 export async function handerValidateChirp(req: Request, res: Response): Promise<void> {
-    type respBody = {
-        valid ?: Boolean,
-        error ?: string
-    }
-
-    let body = "";
     let statusCode = 200;
-    let respBody: respBody = {
-            valid: true,
-        };
-    
+    let respBody: {valid?: boolean, error?: string} = {
+        valid: true,
+    }
     res.header("Content-Type", "application/json");
-    
-    req.on("data", (chunck) => {
-        body += chunck;
-    });
-
-    req.on("end", () => {
-        try {
-            const chirp = JSON.parse(body);
-            if (chirp.body.length > 140)
-            {
-                statusCode = 400;
-                respBody = { error: "Chirp is too long" }
-            }
+    try {
+        const chirp: { body: string } = req.body;
+        if (chirp.body.length > 140)
+        {
+            statusCode = 400;
+            respBody = { error: "Chirp is too long" }
+        }
         } catch (error) {
             statusCode = 400;
             respBody = { error: "Something went wrong" };
         }
         
-   
-        res.status(statusCode).send(JSON.stringify(respBody))
-    })
+        const respJSON = JSON.stringify(respBody);
+        res.status(statusCode).send(respJSON)
+
 }
 
