@@ -5,7 +5,7 @@ export async function handlerReadiness(req: Request, res: Response): Promise<voi
     res.set({
         "Content-Type": "text/plain",
     });
-    res.send();
+    res.status(200).send("OK");
 
 }
 
@@ -17,5 +17,5 @@ export async function handlerMetrics(req: Request, res: Response): Promise<void>
 
 export async function handlerReset(req: Request, res: Response): Promise<void> {
     config.fileserverHits = 0;
-    res.send();
+    res.send("Reset the metrics");
 }
