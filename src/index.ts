@@ -1,7 +1,7 @@
 import express from "express";
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 import { middlewareError } from "./error.js";
-import { handlerAddUser } from "./handlers/users.js";
+import { handlerAddUser, handlerLogin } from "./handlers/users.js";
 import { handlerAddChirps, handlerChirps, handlerChirp } from "./handlers/chirps.js";
 import { handlerMetrics, handlerReset, handlerReadiness } from "./handlers/handler.js";
 
@@ -13,11 +13,17 @@ app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
 app.get("/admin/metrics", handlerMetrics);
 app.post("/admin/reset",handlerReset);
+
 app.get('/api/healthz', handlerReadiness);
+
 app.post('/api/users',handlerAddUser);
+app.post('/api/login',handlerLogin);
+
 app.post('/api/chirps',handlerAddChirps);
 app.get('/api/chirps',handlerChirps);
 app.get('/api/chirps/:id',handlerChirp);
+
+
 app.use(middlewareError);
 
 
