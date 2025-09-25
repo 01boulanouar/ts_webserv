@@ -1,7 +1,7 @@
 import express from "express";
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 import { middlewareError } from "./error.js";
-import { handlerAddUser, handlerAddChirps, handlerMetrics, handlerReadiness, handlerReset, handlerChirps } from "./handler.js";
+import { handlerAddUser, handlerAddChirps, handlerMetrics, handlerReadiness, handlerReset, handlerChirps, handlerChirp } from "./handler.js";
 
 const app = express();
 const PORT = 8080;
@@ -13,9 +13,9 @@ app.get("/admin/metrics", handlerMetrics);
 app.post("/admin/reset",handlerReset);
 app.get('/api/healthz', handlerReadiness);
 app.post('/api/users',handlerAddUser);
-app.get('/api/chirps',handlerChirps);
 app.post('/api/chirps',handlerAddChirps);
-
+app.get('/api/chirps',handlerChirps);
+app.get('/api/chirps/:id',handlerChirp);
 app.use(middlewareError);
 
 

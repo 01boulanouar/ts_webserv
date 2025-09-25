@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { config } from "./config.js";
-import { BadRequestError, ForbiddenError } from "./error.js";;
+import { BadRequestError, ForbiddenError, NotFoundError } from "./error.js";;
 import { createUsers, deleteUsers } from "./db/queries/users.js";
-import { createChirps, deleteChirps, getChirps } from "./db/queries/chirps.js";
+import { createChirps, deleteChirps, getChirp, getChirps } from "./db/queries/chirps.js";
 import { NewChirp } from "./db/schema.js";
 
 export async function handlerReadiness(req: Request, res: Response): Promise<void> {
@@ -58,6 +58,25 @@ function getJSON(req: Request, res: Response) {
     return req.body;
 }
 
+type Chirp = {
+    id: string,
+    createdAt: Date,
+    updatedAt: Date,
+    body: string,
+    userId?: string,
+    user_id?: string
+}
+
+function renameChirp(chirp: Chirp) {
+    return {
+        id: chirp.id,
+        createdAt: chirp.createdAt,
+        updatedAt: chirp.updatedAt,
+        body: chirp.body,
+        userId: chirp.user_id
+    }
+}
+
 export async function handlerAddChirps(req: Request, res: Response): Promise<void> {
     const data: {body: string, userId: string} = getJSON(req, res);
 
@@ -71,31 +90,25 @@ export async function handlerAddChirps(req: Request, res: Response): Promise<voi
         body: data.body,
         user_id: data.userId
     });
-    res.status(201).json({
-        id: result.id,
-        createdAt: result.createdAt,
-        updatedAt: result.updatedAt,
-        body: result.body,
-        userId: result.user_id
-    });
+    res.status(201).json(renameChirp(result));
 }
 
 
 export async function handlerChirps(req: Request, res: Response): Promise<void> {
    
     const chirps = await getChirps();
-    const result = chirps.map((chirp) => {
-        const renamed = {
-        id: chirp.id,
-        createdAt: chirp.createdAt,
-        updatedAt: chirp.updatedAt,
-        body: chirp.body,
-        userId: chirp.user_id
-    }
-        return renamed;
-    });
+    const result = chirps.map((chirp) => renameChirp(chirp));
     res.json(result);
  
+}
+
+export async function handlerChirp(req: Request, res: Response): Promise<void> {
+    if (!req.params.id)
+        throw new NotFoundError("Chirp Not found");
+     
+    const result = await getChirp(req.params.id);
+    res.json(renameChirp(result));;
+
 }
 
 
