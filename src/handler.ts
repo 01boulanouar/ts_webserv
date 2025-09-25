@@ -30,26 +30,39 @@ export async function handlerReset(req: Request, res: Response): Promise<void> {
 }
 
 
+function cleanBody(body: string) {
+    const filter = ["kerfuffle", "sharbert", "fornax"];
+    if (filter.some(item => body.includes(item)))
+    {
+        body = body.split(" ").map((word) => {
+            if (filter.includes(word.toLowerCase()))
+                return "****";
+            return word;
+        }).join(" ");
+    };
+    return body;
+}
+
+function sendJsonError(req: Request, res: Response, error: string): void {
+    res.status(400).json({ error });
+}
+
 export async function handerValidateChirp(req: Request, res: Response): Promise<void> {
-    let statusCode = 200;
-    let respBody: {valid?: boolean, error?: string} = {
-        valid: true,
-    }
+
     res.header("Content-Type", "application/json");
     try {
-        const chirp: { body: string } = req.body;
+        const chirp: {body: string} = req.body;
         if (chirp.body.length > 140)
         {
-            statusCode = 400;
-            respBody = { error: "Chirp is too long" }
+            sendJsonError(req, res, "Chirp is too long");
+            return;
         }
-        } catch (error) {
-            statusCode = 400;
-            respBody = { error: "Something went wrong" };
-        }
-        
-        const respJSON = JSON.stringify(respBody);
-        res.status(statusCode).send(respJSON)
+        res.json({ cleanedBody: cleanBody(chirp.body) });
 
+    } catch (error) {
+        sendJsonError(req, res, "Something went wrong" );
+        return;
+    }
+ 
 }
 
