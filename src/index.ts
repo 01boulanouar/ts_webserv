@@ -1,7 +1,9 @@
 import express from "express";
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 import { middlewareError } from "./error.js";
-import { handlerAddUser, handlerAddChirps, handlerMetrics, handlerReadiness, handlerReset, handlerChirps, handlerChirp } from "./handler.js";
+import { handlerAddUser } from "./handlers/users.js";
+import { handlerAddChirps, handlerChirps, handlerChirp } from "./handlers/chirps.js";
+import { handlerMetrics, handlerReset, handlerReadiness } from "./handlers/handler.js";
 
 const app = express();
 const PORT = 8080;
