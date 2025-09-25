@@ -43,26 +43,16 @@ function cleanBody(body: string) {
     return body;
 }
 
-function sendJsonError(req: Request, res: Response, error: string): void {
-    res.status(400).json({ error });
-}
 
 export async function handerValidateChirp(req: Request, res: Response): Promise<void> {
 
     res.header("Content-Type", "application/json");
-    try {
-        const chirp: {body: string} = req.body;
-        if (chirp.body.length > 140)
-        {
-            sendJsonError(req, res, "Chirp is too long");
-            return;
-        }
-        res.json({ cleanedBody: cleanBody(chirp.body) });
 
-    } catch (error) {
-        sendJsonError(req, res, "Something went wrong" );
-        return;
-    }
+    const chirp: {body: string} = req.body;
+    if (chirp.body.length > 140)
+        throw new Error("Something went wrong on our end");
+
+    res.json({ cleanedBody: cleanBody(chirp.body) });
  
 }
 

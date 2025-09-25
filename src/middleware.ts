@@ -15,3 +15,8 @@ export function middlewareMetricsInc(req: Request, res: Response, next: NextFunc
     config.fileserverHits++;
     next();
 }
+
+export function middlewareError(err: Error, req: Request, res: Response, next: NextFunction): void {
+    console.log(err.message);
+    res.status(500).json({ error: err.message });
+}
