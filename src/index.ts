@@ -1,5 +1,6 @@
 import express from "express";
-import { middlewareError, middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
+import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
+import { middlewareError } from "./error.js";
 import { handerValidateChirp, handlerMetrics, handlerReadiness, handlerReset } from "./handler.js";
 
 const app = express();

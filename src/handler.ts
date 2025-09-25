@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { config } from "./config.js";
-import { error } from "console";
+import { BadRequestError } from "./error.js";
 
 export async function handlerReadiness(req: Request, res: Response): Promise<void> {
     res.set({
@@ -50,7 +50,7 @@ export async function handerValidateChirp(req: Request, res: Response): Promise<
 
     const chirp: {body: string} = req.body;
     if (chirp.body.length > 140)
-        throw new Error("Something went wrong on our end");
+        throw new BadRequestError("Chirp is too long. Max length is 140");
 
     res.json({ cleanedBody: cleanBody(chirp.body) });
  
