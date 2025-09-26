@@ -15,6 +15,7 @@ type APIConfig = {
         platform: string,
         secret: string,
         accessTokenLimit: number,
+        polkaKey: string
     }
     db: {
         url: string,
@@ -32,6 +33,7 @@ export const config: APIConfig = {
         platform: envOrThrow("PLATFORM"),
         secret: envOrThrow("SECRET"),
         accessTokenLimit: 3600,
+        polkaKey: envOrThrow("POLKA_KEY"),
     },
     db: {
         url: envOrThrow("DB_URL"),

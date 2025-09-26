@@ -57,3 +57,14 @@ export async function makeRefreshToken(user_id: string) {
     const result = await createRefreshToken(refreshToken);
     return result.token;
 }
+
+export async function getAPIKey(req: Request) {
+    const authHeader = req.get("Authorization");
+    if (!authHeader) 
+        throw new UnauthorizedError("No Authorization Header");
+    const split = authHeader.split(" ");
+    console.log(split);
+    if (split[0] !== "ApiKey" || !split[1])
+        throw new UnauthorizedError("Invalid Authorization Header");
+    return authHeader.split(" ")[1];
+}

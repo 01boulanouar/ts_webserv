@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { BadRequestError, NotFoundError, UnauthorizedError } from "../error.js";;
 import { createUsers, getUserByEmail, updateUser, upgradeUser } from "../db/queries/users.js";
 import { getJSON } from "./handler.js";
-import { checkPasswordHash, getBearerToken, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "../auth.js";
+import { checkPasswordHash, getAPIKey, getBearerToken, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "../auth.js";
 import { NewUser } from "../db/schema.js";
 import { config } from "../config.js";
 import { getRefreshToken, getUserFromRefreshToken, updateRefreshToken } from "../db/queries/refresh_tokens.js";
@@ -115,6 +115,10 @@ export async function handlerUpgradeUser(req: Request, res: Response): Promise<v
         res.status(204).json();
         return;
     }
+    const polkaKey = await getAPIKey(req);
+    if (polkaKey !== config.api.polkaKey)
+        throw new UnauthorizedError("Invalid Polka key");
+    
     const user: UserResponse = await upgradeUser(data.data.userId);
     if (!user)
         throw new NotFoundError("No user with that id");
