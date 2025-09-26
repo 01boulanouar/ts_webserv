@@ -2,11 +2,11 @@ import { Request, Response } from "express";
 import { BadRequestError, UnauthorizedError } from "../error.js";;
 import { createUsers, getUserByEmail } from "../db/queries/users.js";
 import { getJSON } from "./handler.js";
-import { checkPasswordHash, hashPassword, makeJWT } from "../auth.js";
+import { checkPasswordHash, hashPassword, makeJWT, makeRefreshToken } from "../auth.js";
 import { NewUser } from "../db/schema.js";
 import { config } from "../config.js";
 
-type UserResponse = Omit<NewUser, "hashed_password"> & { token?: string };
+type UserResponse = Omit<NewUser, "hashed_password"> & { token?: string, refreshToken?: string };
 
 export async function handlerAddUser(req: Request, res: Response): Promise<void> {
     const data: {email: string, password: string} = getJSON(req, res);
@@ -34,7 +34,7 @@ export async function handlerAddUser(req: Request, res: Response): Promise<void>
 
 
 export async function handlerLogin(req: Request, res: Response): Promise<void> {
-    const data: {email: string, password: string, expiresInSeconds?: string} = getJSON(req, res);
+    const data: {email: string, password: string } = getJSON(req, res);
 
     if (!data.email)
         throw new BadRequestError("No valid Email provided");
@@ -49,17 +49,14 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
     const valid = await checkPasswordHash(data.password, user.hashed_password);
     if (!valid)
         throw new UnauthorizedError("Incorrect email or password");
-
-    let expiresIn = 3600;
-    if (data.expiresInSeconds && Number(data.expiresInSeconds) < 3600)
-        expiresIn = Number(data.expiresInSeconds);
-
+    
     const result: UserResponse = {
         id: user.id,
         email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
-        token: makeJWT(user.id, expiresIn, config.api.secret)
+        token: makeJWT(user.id, 3600, config.api.secret),
+        refreshToken: await makeRefreshToken(user.id),
     }
     res.json(result);
 }
