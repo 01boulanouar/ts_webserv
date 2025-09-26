@@ -5,7 +5,7 @@ import { getJSON } from "./handler.js";
 import { checkPasswordHash, getBearerToken, hashPassword, makeJWT, makeRefreshToken } from "../auth.js";
 import { NewUser } from "../db/schema.js";
 import { config } from "../config.js";
-import { getRefreshToken, getUserFromRefreshToken } from "src/db/queries/refresh_tokens.js";
+import { getRefreshToken, getUserFromRefreshToken, updateRefreshToken } from "../db/queries/refresh_tokens.js";
 
 type UserResponse = Omit<NewUser, "hashed_password"> & { token?: string, refreshToken?: string };
 
@@ -64,7 +64,6 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
 
 export async function handlerRefresh(req: Request, res: Response): Promise<void> {
 
-  
     const bearer = getBearerToken(req);
     const token = await getRefreshToken(bearer);
     if (!token || token.revoked_at || Date.now() > token.expires_at.getTime())
@@ -73,5 +72,14 @@ export async function handlerRefresh(req: Request, res: Response): Promise<void>
     const user = await getUserFromRefreshToken(token);
     const accessToken = makeJWT(user.id, config.api.accessTokenLimit, config.api.secret)
 
-    res.json({ token: accessToken} );
+    res.json({ token: accessToken } );
+}
+
+
+export async function handlerRevoke(req: Request, res: Response): Promise<void> {
+
+    const bearer = getBearerToken(req);
+    await updateRefreshToken(bearer);
+    
+    res.status(204).send();
 }

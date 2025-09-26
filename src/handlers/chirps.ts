@@ -42,13 +42,9 @@ export async function handlerAddChirps(req: Request, res: Response): Promise<voi
     const data: {body: string} = getJSON(req, res);
 
     const token = getBearerToken(req);
-    const userId = validateJWT(token, config.api.secret);
-    if (!userId)
-        throw new UnauthorizedError("invalid Bearer token")
 
-    if (!userId)
-        throw new BadRequestError("Chirp has no user");
-    
+    const userId = validateJWT(token, config.api.secret);
+
     if (data.body.length > 140)
         throw new BadRequestError("Chirp is too long. Max length is 140");
     

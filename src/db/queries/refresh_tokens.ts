@@ -12,7 +12,8 @@ export async function deleteRefreshTokens() {
 }
 
 export async function getRefreshToken(token: string) { 
-    const [result] = await db.select().from(refresh_tokens).where(eq(refresh_tokens.token, token));
+    const [result] = await db.select().from(refresh_tokens)
+    .where(eq(refresh_tokens.token, token));
     return result;
 }
 
@@ -21,4 +22,13 @@ export async function getUserFromRefreshToken(refresh_token: NewRefreshToken) {
     .innerJoin(users, eq(refresh_tokens.user_id, users.id))
     .where(eq(refresh_tokens.token, refresh_token.token));
     return result.users;
+}
+
+export async function updateRefreshToken(token: string) { 
+    const [result] = await db.update(refresh_tokens).set({ 
+         revoked_at: new Date(),
+         updatedAt: new Date() 
+        })
+    .where(eq(refresh_tokens.token, token));
+    return result;
 }

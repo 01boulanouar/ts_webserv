@@ -29,7 +29,13 @@ export function makeJWT(userID: string, expiresIn: number, secret: string): stri
 }
 
 export function validateJWT(tokenString: string, secret: string): string {
-    const payload = jwt.verify(tokenString, secret)  as Payload;
+    let payload: Payload;
+    try {
+        payload = jwt.verify(tokenString, secret) as Payload;
+    }
+    catch(err){ 
+        throw new UnauthorizedError("invalid Bearer token")
+    }
     return payload.sub!;
 }
 
