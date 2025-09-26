@@ -13,6 +13,7 @@ type APIConfig = {
     api: {
         fileserverHits: number,
         platform: string,
+        secret: string,
     }
     db: {
         url: string,
@@ -28,6 +29,7 @@ export const config: APIConfig = {
     api: {
         fileserverHits: 0,
         platform: envOrThrow("PLATFORM"),
+        secret: envOrThrow("SECRET"),
     },
     db: {
         url: envOrThrow("DB_URL"),

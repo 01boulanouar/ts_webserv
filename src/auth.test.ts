@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { checkPasswordHash, hashPassword, makeJWT, Payload, validateJWT } from "./auth";
+import { checkPasswordHash, hashPassword, makeJWT, validateJWT } from "./auth";
 
 describe("Password Hashing", () => {
     const password1 = "correctPassword123!";
@@ -42,3 +42,4 @@ describe("JWT Tokens", () => {
         expect(() => validateJWT(jwt3, secret)).toThrowError('jwt expired');
     });
 });
+

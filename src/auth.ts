@@ -1,6 +1,7 @@
 import * as argon2 from "argon2";
-import * as jwt from "jsonwebtoken";
-import { UnauthorizedError } from "./error";
+import jwt from "jsonwebtoken";
+import { Request } from "express";
+import { UnauthorizedError } from "./error.js";
 
 export async function hashPassword(password: string): Promise<string> {
    return await argon2.hash(password);
@@ -27,4 +28,12 @@ export function makeJWT(userID: string, expiresIn: number, secret: string): stri
 export function validateJWT(tokenString: string, secret: string): string {
     const payload = jwt.verify(tokenString, secret)  as Payload;
     return payload.sub!;
+}
+
+export function getBearerToken(req: Request): string {
+    const authHeader = req.get("Authorization");
+    if (!authHeader) 
+        throw new UnauthorizedError("No Bearer Token");
+    const bearerToken = authHeader.split(" ")[1];
+    return bearerToken;
 }

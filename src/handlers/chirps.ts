@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
-import { BadRequestError, NotFoundError } from "../error.js";;
+import { BadRequestError, NotFoundError, UnauthorizedError } from "../error.js";;
 import { createChirps, getChirp, getChirps } from "../db/queries/chirps.js";
 import { getJSON } from "./handler.js";
+import { getBearerToken, validateJWT } from "../auth.js";
+import { config } from "../config.js";
 
 type Chirp = {
     id: string,
@@ -36,19 +38,24 @@ function cleanBody(body: string) {
 }
 
 
-
 export async function handlerAddChirps(req: Request, res: Response): Promise<void> {
-    const data: {body: string, userId: string} = getJSON(req, res);
+    const data: {body: string} = getJSON(req, res);
 
-    if (!data.userId)
+    const token = getBearerToken(req);
+    const userId = validateJWT(token, config.api.secret);
+    if (!userId)
+        throw new UnauthorizedError("invalid Bearer token")
+
+    if (!userId)
         throw new BadRequestError("Chirp has no user");
     
     if (data.body.length > 140)
         throw new BadRequestError("Chirp is too long. Max length is 140");
     
+
     const result = await createChirps({
         body: cleanBody(data.body),
-        user_id: data.userId
+        user_id: userId
     });
     res.status(201).json(renameChirp(result));
 }
