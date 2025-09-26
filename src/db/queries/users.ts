@@ -28,3 +28,12 @@ export async function updateUser(id: string, email: string, hashed_password: str
     .where(eq(users.id, id)).returning();
     return result;
 }
+
+
+export async function upgradeUser(id: string) { 
+    const [result] = await db.update(users).set({ 
+            is_chirpy_red: true
+        })
+    .where(eq(users.id, id)).returning();
+    return result;
+}

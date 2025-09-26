@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
-import { BadRequestError, UnauthorizedError } from "../error.js";;
-import { createUsers, getUserByEmail, updateUser } from "../db/queries/users.js";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "../error.js";;
+import { createUsers, getUserByEmail, updateUser, upgradeUser } from "../db/queries/users.js";
 import { getJSON } from "./handler.js";
 import { checkPasswordHash, getBearerToken, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "../auth.js";
 import { NewUser } from "../db/schema.js";
 import { config } from "../config.js";
 import { getRefreshToken, getUserFromRefreshToken, updateRefreshToken } from "../db/queries/refresh_tokens.js";
 
-type UserResponse = Omit<NewUser, "hashed_password"> & { token?: string, refreshToken?: string };
+type UserResponse = Omit<NewUser, "hashed_password"> & { 
+    token?: string,
+    refreshToken?: string,
+    isChirpyRed?: boolean };
 
 export async function handlerAddUser(req: Request, res: Response): Promise<void> {
     const data: {email: string, password: string} = getJSON(req, res);
@@ -29,6 +32,7 @@ export async function handlerAddUser(req: Request, res: Response): Promise<void>
         email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        isChirpyRed: user.is_chirpy_red
     }
     res.status(201).json(result);
 }
@@ -58,6 +62,7 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
         updatedAt: user.updatedAt,
         token: makeJWT(user.id, config.api.accessTokenLimit, config.api.secret),
         refreshToken: await makeRefreshToken(user.id),
+        isChirpyRed: user.is_chirpy_red
     }
     res.json(result);
 }
@@ -100,4 +105,26 @@ export async function handlerUpdateUser(req: Request, res: Response): Promise<vo
     const result: UserResponse = await updateUser(userId, data.email, hashed_password);
 
     res.json(result);
+}
+
+export async function handlerUpgradeUser(req: Request, res: Response): Promise<void> {
+    const data: {event: string, data: { userId: string }} = getJSON(req, res);
+
+    if (!data.event || data.event !== "user.upgraded" || !data.data || ! data.data.userId)
+    {
+        res.status(204).json();
+        return;
+    }
+    const user: UserResponse = await upgradeUser(data.data.userId);
+    if (!user)
+        throw new NotFoundError("No user with that id");
+
+    const result: UserResponse = {
+        id: user.id,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        isChirpyRed: user.is_chirpy_red,
+    }
+    res.status(204).json(result);
 }
