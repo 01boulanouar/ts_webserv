@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError } from "../error.js";;
-import { createChirps, deleteChirp, getChirp, getChirps, getChirpsByAuthor } from "../db/queries/chirps.js";
+import { BadRequestError, ForbiddenError, NotFoundError } from "../error.js";;
+import { createChirps, deleteChirp, getChirp, getChirps } from "../db/queries/chirps.js";
 import { getJSON } from "./handler.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
@@ -60,12 +60,17 @@ export async function handlerAddChirps(req: Request, res: Response): Promise<voi
 export async function handlerChirps(req: Request, res: Response): Promise<void> {
    
     let chirps: Chirp[];
-    const authorId = req.query.authorId;
-    if (typeof authorId === "string")
-        chirps = await getChirpsByAuthor(authorId);
-    else 
-        chirps = await getChirps();
-    const result = chirps.map((chirp) => renameChirp(chirp));
+    const authorId = req.query.authorId as string || "";
+    const sort = req.query.sort as string || "";  
+
+    chirps = await getChirps();
+    
+    const filtered = chirps.filter((chirp) => chirp.userId === authorId || authorId === "");
+
+    const result = filtered.map((chirp) => renameChirp(chirp));
+
+    if (sort && sort === "desc")
+        result.sort((a,b) => b.createdAt.getTime() - a.createdAt.getTime());
     res.json(result);
  
 }
