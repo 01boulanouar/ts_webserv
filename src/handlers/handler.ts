@@ -3,6 +3,7 @@ import { config } from "../config.js";
 import { BadRequestError, ForbiddenError }  from "../error.js";;
 import {  deleteUsers } from "../db/queries/users.js";
 import {  deleteChirps } from "../db/queries/chirps.js";
+import { deleteRefreshTokens } from "../db/queries/refresh_tokens.js";
 
 export function getJSON(req: Request, res: Response) {
     res.header("Content-Type", "application/json");
@@ -41,5 +42,6 @@ export async function handlerReset(req: Request, res: Response): Promise<void> {
         throw new ForbiddenError("not enough privileges");
     await deleteChirps();
     await deleteUsers();
+    await deleteRefreshTokens();
     res.send("Reset the metrics");
 }

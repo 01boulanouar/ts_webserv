@@ -42,7 +42,6 @@ export async function handlerAddChirps(req: Request, res: Response): Promise<voi
     const data: {body: string} = getJSON(req, res);
 
     const token = getBearerToken(req);
-
     const userId = validateJWT(token, config.api.secret);
 
     if (data.body.length > 140)
@@ -70,6 +69,6 @@ export async function handlerChirp(req: Request, res: Response): Promise<void> {
         throw new NotFoundError("Chirp Not found");
      
     const result = await getChirp(req.params.id);
-    res.json(renameChirp(result));;
+    res.json(renameChirp(result));
 
 }

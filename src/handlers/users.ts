@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { BadRequestError, UnauthorizedError } from "../error.js";;
-import { createUsers, getUserByEmail } from "../db/queries/users.js";
+import { createUsers, getUserByEmail, updateUser } from "../db/queries/users.js";
 import { getJSON } from "./handler.js";
-import { checkPasswordHash, getBearerToken, hashPassword, makeJWT, makeRefreshToken } from "../auth.js";
+import { checkPasswordHash, getBearerToken, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "../auth.js";
 import { NewUser } from "../db/schema.js";
 import { config } from "../config.js";
 import { getRefreshToken, getUserFromRefreshToken, updateRefreshToken } from "../db/queries/refresh_tokens.js";
@@ -75,11 +75,29 @@ export async function handlerRefresh(req: Request, res: Response): Promise<void>
     res.json({ token: accessToken } );
 }
 
-
 export async function handlerRevoke(req: Request, res: Response): Promise<void> {
 
     const bearer = getBearerToken(req);
     await updateRefreshToken(bearer);
     
     res.status(204).send();
+}
+
+
+export async function handlerUpdateUser(req: Request, res: Response): Promise<void> {
+    const data: {email: string, password: string} = getJSON(req, res);
+
+    const token = getBearerToken(req);
+    const userId = validateJWT(token, config.api.secret);
+
+    if (!data.email)
+        throw new BadRequestError("No valid Email provided");
+    
+    if (!data.password)
+        throw new BadRequestError("No valid Password provided");
+
+    const hashed_password = await hashPassword(data.password);
+    const result: UserResponse = await updateUser(userId, data.email, hashed_password);
+
+    res.json(result);
 }

@@ -29,6 +29,6 @@ export async function updateRefreshToken(token: string) {
          revoked_at: new Date(),
          updatedAt: new Date() 
         })
-    .where(eq(refresh_tokens.token, token));
+    .where(eq(refresh_tokens.token, token)).returning();
     return result;
 }
