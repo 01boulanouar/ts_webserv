@@ -2,7 +2,7 @@ import express from "express";
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 import { middlewareError } from "./error.js";
 import { handlerRevoke, handlerRefresh, handlerAddUser, handlerLogin, handlerUpdateUser } from "./handlers/users.js";
-import { handlerAddChirps, handlerChirps, handlerChirp } from "./handlers/chirps.js";
+import { handlerDeleteChirp, handlerAddChirps, handlerChirps, handlerChirp } from "./handlers/chirps.js";
 import { handlerMetrics, handlerReset, handlerReadiness } from "./handlers/handler.js";
 
 const app = express();
@@ -27,6 +27,7 @@ app.post('/api/revoke',handlerRevoke);
 app.post('/api/chirps',handlerAddChirps);
 app.get('/api/chirps',handlerChirps);
 app.get('/api/chirps/:id',handlerChirp);
+app.delete('/api/chirps/:id',handlerDeleteChirp);
 
 
 app.use(middlewareError);

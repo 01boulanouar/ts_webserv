@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { BadRequestError, NotFoundError, UnauthorizedError } from "../error.js";;
-import { createChirps, getChirp, getChirps } from "../db/queries/chirps.js";
+import { BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError } from "../error.js";;
+import { createChirps, deleteChirp, getChirp, getChirps } from "../db/queries/chirps.js";
 import { getJSON } from "./handler.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
@@ -67,8 +67,25 @@ export async function handlerChirps(req: Request, res: Response): Promise<void> 
 export async function handlerChirp(req: Request, res: Response): Promise<void> {
     if (!req.params.id)
         throw new NotFoundError("Chirp Not found");
-     
     const result = await getChirp(req.params.id);
+    if (!result)
+        throw new NotFoundError("Chirp Not found");
     res.json(renameChirp(result));
+
+}
+
+
+export async function handlerDeleteChirp(req: Request, res: Response): Promise<void> {
+    if (!req.params.id)
+        throw new NotFoundError("Chirp Not found");
+     
+    const token = getBearerToken(req);
+    const userId = validateJWT(token, config.api.secret);
+    const chirp = await getChirp(req.params.id);
+    if (chirp.user_id !== userId)
+        throw new ForbiddenError("Not the owner of the chirp");
+    
+    const result = await deleteChirp(req.params.id);
+    res.status(204).json(result);
 
 }
