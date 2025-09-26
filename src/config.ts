@@ -14,6 +14,7 @@ type APIConfig = {
         fileserverHits: number,
         platform: string,
         secret: string,
+        accessTokenLimit: number,
     }
     db: {
         url: string,
@@ -30,6 +31,7 @@ export const config: APIConfig = {
         fileserverHits: 0,
         platform: envOrThrow("PLATFORM"),
         secret: envOrThrow("SECRET"),
+        accessTokenLimit: 3600,
     },
     db: {
         url: envOrThrow("DB_URL"),

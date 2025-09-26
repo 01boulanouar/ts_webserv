@@ -2,9 +2,10 @@ import { Request, Response } from "express";
 import { BadRequestError, UnauthorizedError } from "../error.js";;
 import { createUsers, getUserByEmail } from "../db/queries/users.js";
 import { getJSON } from "./handler.js";
-import { checkPasswordHash, hashPassword, makeJWT, makeRefreshToken } from "../auth.js";
+import { checkPasswordHash, getBearerToken, hashPassword, makeJWT, makeRefreshToken } from "../auth.js";
 import { NewUser } from "../db/schema.js";
 import { config } from "../config.js";
+import { getRefreshToken, getUserFromRefreshToken } from "src/db/queries/refresh_tokens.js";
 
 type UserResponse = Omit<NewUser, "hashed_password"> & { token?: string, refreshToken?: string };
 
@@ -55,8 +56,22 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
         email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
-        token: makeJWT(user.id, 3600, config.api.secret),
+        token: makeJWT(user.id, config.api.accessTokenLimit, config.api.secret),
         refreshToken: await makeRefreshToken(user.id),
     }
     res.json(result);
+}
+
+export async function handlerRefresh(req: Request, res: Response): Promise<void> {
+
+  
+    const bearer = getBearerToken(req);
+    const token = await getRefreshToken(bearer);
+    if (!token || token.revoked_at || Date.now() > token.expires_at.getTime())
+        throw new UnauthorizedError("Invalid or revoked refresh token");
+
+    const user = await getUserFromRefreshToken(token);
+    const accessToken = makeJWT(user.id, config.api.accessTokenLimit, config.api.secret)
+
+    res.json({ token: accessToken} );
 }
