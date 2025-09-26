@@ -11,6 +11,13 @@ export async function deleteChirps() {
     await db.delete(chirps);
 }
 
+export async function getChirpsByAuthor(authorId: string) { 
+    const result = await db.select().from(chirps)
+    .where(eq(chirps.user_id, authorId))
+    .orderBy(asc(chirps.createdAt));
+    return result;
+}
+
 export async function getChirps() { 
     const result = await db.select().from(chirps).orderBy(asc(chirps.createdAt));
     return result;
